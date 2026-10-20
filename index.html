@@ -1185,7 +1185,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 const TAU=Math.PI*2;
 function seeded(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const VERSION='0.33.0';
+const VERSION='0.33.1';
 const WORLD={w:1800,h:1300};
 const TIERS={common:{name:'普通',color:'#8e98a8'},rare:{name:'稀有',color:'#3a86ff'},epic:{name:'史詩',color:'#9d4edd'},legend:{name:'傳說',color:'#ffb703'},limited:{name:'限定',color:'#e0a800'}};
 
@@ -1290,6 +1290,7 @@ const PROJ={'紙箱':{pal:{C:'#c68b59',D:'#8a5a2b',T:'#f1e7c6'},rows:["CCCCCCCC"
 const PROJ_THEME={gm:['考績表','文件疊'],parking:['打叉文件','收據'],mailman:['紙箱','信封'],gossip:['對話框','咖啡紙杯'],coach:['紙球','咖啡紙杯'],rnd:['磁碟片','長條圖碎片'],pr:['文件疊','對話框'],cs:['考績表','收據'],ghost:['信封','紙球'],leader:['對話框','紙球'],kpi:['KPI 箭頭','長條圖碎片'],accountant:['計算機','收據'],blame:['打叉文件','黑鍋'],hr:['考績表','打叉文件'],cio:['磁碟片','藍屏碎片'],boss:['金條','文件疊','雪茄'],legal:['合約卷軸'],chairman:['金色印章','金條'],dir_fin:['收據','綠色紙鈔'],dir_ops:['組織圖卡'],dir_hr:['考績表'],thrower:['紙球','咖啡紙杯','釘書機'],bomber:['信封']};
 const PROJ_DIR={'KPI 箭頭':1},PROJ_FLAT={'對話框':1,'解僱信封':1,'信封':1,'組織圖卡':1,'考績表':1,'合約卷軸':1};
 const ACH_TITLES={collapse:'加班之王',fourth:'去過四樓的人',climber:'職場生存專家',nohit:'零失誤新人',speed:'效率之鬼',dodge:'閃避達人',idle:'摸魚大師',intern:'實習生社畜',coin:'業務之神',daily7:'全年無休社畜',angel:'天使投資人',guns:'武器收藏家',outfits:'時尚教主'};/* v0.33.0：成就職稱 13 個 */
+const TIE_OUTFITS=['shirt','suit'];/* v0.33.1：領帶收藏適用的服裝 */
 const ACH_GROUPS=[['挑戰',['collapse','fourth','climber','nohit','speed','dodge','idle']],['累積',['intern','coin','daily7']],['收集',['angel','guns','outfits']]];
 const FLOOR_TIP={B1:'逃脫關：撐到電梯到，再衝進右側電梯。車子被打爆會爆炸',  '2F':'輸送帶會把你帶著走，從中間的穿越口通過','8F':'打爆販賣機會掉出 10 秒加成','9F':'跑步機會把人往後帶；靠近啞鈴架可以推倒壓殭屍','23F':'季度目標看板會隨機公布目標，達成掉加薪通知，失敗殭屍會被激勵','16F':'保護中央的原型機，畫面邊緣出現藍色箭頭代表它正被攻擊；同色傳送門可以瞬間移動','6F':'靠近響著的電話停一下就能掛斷，掛斷時會震開身邊的殭屍；畫面邊緣的紅色箭頭指向響鈴電話','4F':'……這層好像不該存在'};
 /* ================= 爬樓模式：數值設定 ================= */
@@ -1718,14 +1719,9 @@ const FUN={
   door:{name:'打卡神速',desc:'電梯門開得快 0.3 秒',price:500},
   lunchbox:{name:'帶飯',desc:'便當多一根香腸，回血 +1',price:600},
   register:{name:'入帳通知',desc:'撿金幣的音效變成收銀機「叮」',price:600},
-  tie:{name:'領帶收藏',desc:'白襯衫的領帶每局隨機換色',price:700},
-  phone:{name:'學會摸魚',desc:'站著不動時角色會滑手機',price:800},
-  social:{name:'交際手腕',desc:'主管台詞後面多一句「（他其實人不錯）」',price:800},
+  tie:{name:'領帶收藏',desc:'白襯衫、西裝的領帶每局隨機換色',price:700},
   leave:{name:'提早離席',desc:'陣亡改成揮手離開，顯示「先走了掰掰」',price:900},
-  seat:{name:'改個座位',desc:'1F 大廳一張桌子出現你的名牌',price:1000},
-  sign:{name:'練習簽名',desc:'核准大印章蓋的字變成你的名字',price:1200},
   beach:{name:'年度旅遊',desc:'通關結算背景換成海灘（但你人還在辦公室）',price:1500},
-  card:{name:'集點卡',desc:'每 100 隻殭屍蓋一個章，集滿十個什麼都不會發生',price:1500},
   news:{name:'訂閱電子報',desc:'每天第一次開遊戲收到一句沒用的職場金句',price:2000},
 };
 const HOLDERS=[{n:'標準塑膠套',p:0},{n:'皮革卡套',p:1500},{n:'金屬卡套',p:4000},{n:'黑金精品',p:8000}];/* v0.32.0：精品識別證套（純外觀） */
@@ -1836,8 +1832,12 @@ const BODY_DY=f=>f<4?[0,0,1,0][f]:f<12?[1,0,0,0,1,0,0,0][f-4]:0;
 function artFist(x,y,col,S){/* v0.30.12：浮空拳頭 3×3（1 格深色外框、四角切圓、底排壓暗），對齊像素格 */const N=3,x0=Math.round(x-1.5*S),y0=Math.round(y-1.5*S);
   ctx.fillStyle='#1f1a24';ctx.fillRect(x0-S,y0,(N+2)*S,N*S);ctx.fillRect(x0,y0-S,N*S,(N+2)*S);ctx.fillStyle=col;ctx.fillRect(x0,y0,N*S,N*S);
   ctx.fillStyle='rgba(60,30,20,.22)';ctx.fillRect(x0,y0+(N-1)*S,N*S,S);ctx.fillStyle='rgba(60,30,20,.18)';ctx.fillRect(x0+(N-1)*S,y0+(N-1)*S,S,S);}
+function tieWrap(C){if(!C||!G||!G.tieColor||!TIE_OUTFITS.includes(save.outfit))return C;const key='tie|'+C.oid+'|'+G.tieColor+'|'+C.img.width;let r=ART.cache.get(key);if(r)return r;
+  const c=document.createElement('canvas');c.width=C.img.width;c.height=C.img.height;const x=c.getContext('2d');x.drawImage(C.img,0,0);const D=x.getImageData(0,0,c.width,c.height),d=D.data;const tc=G.tieColor,tr=parseInt(tc.slice(1,3),16),tg=parseInt(tc.slice(3,5),16),tb=parseInt(tc.slice(5,7),16);
+  const n=Math.round(c.width/C.fw),bx=Math.max(3,Math.round(C.fw*.14));for(let f=0;f<n;f++){const cx=f*C.fw+C.fw/2;for(let yy=Math.round(C.fh*.36);yy<Math.round(C.fh*.86);yy++)for(let xx=Math.round(cx-bx);xx<Math.round(cx+bx);xx++){const i=(yy*c.width+xx)*4;if(d[i+3]<200)continue;const R=d[i],Gg=d[i+1],B=d[i+2];if(R>140&&Gg<90&&B<90){const L=R/235;d[i]=Math.min(255,tr*L);d[i+1]=Math.min(255,tg*L);d[i+2]=Math.min(255,tb*L);}}}
+  x.putImageData(D,0,0);r=Object.assign({},C,{img:c});ART.cache.set(key,r);return r;}/* v0.33.1：領帶收藏——新版人物的領帶依本局顏色換色 */
 function drawPlayerArt(p,x,y,alpha,white){
-  const C=artChar(save.char,save.outfit);if(!C)return false;artPlayerTick(p);
+  const C=tieWrap(artChar(save.char,save.outfit));if(!C)return false;artPlayerTick(p);
   const S=snS(ARTK.P),id=p.slots[p.active].id,W=ARTM.weapons[awId(id)],O=C.O,fr=artPlayerFrame(p),face=p.aFace,aimR0=face===1?p.aimS:Math.PI-p.aimS,aimR=Math.round(aimR0/AIM_STEP)*AIM_STEP,bodyDy=BODY_DY(fr);
   const rg=O.rig,ox=rg?0:RIG_OX,oy=rg?0:RIG_OY,piv0=rg?rg.pivot:ARTM.rig.pivot,shF=rg?rg.shoulder_far:ARTM.rig.shoulder.far_left;
   const typ=W?W.hold.type:'one',isM=typ.indexOf('melee')===0;
@@ -2167,7 +2167,8 @@ function loadSave(){
   if(v<2){out.unlocked=LEVEL_MIGRATE[clamp(Math.floor(+s.unlocked||0),0,5)];out.cleared=(Array.isArray(s.cleared)?s.cleared:[]).map(i=>LEVEL_MIGRATE[i]).filter(i=>i!==undefined);v=2;}
   if(v<3){out.unlocked=LEVEL_MIGRATE3[clamp(Math.floor(+out.unlocked||0),0,8)];out.cleared=(Array.isArray(out.cleared)?out.cleared:[]).map(i=>LEVEL_MIGRATE3[i]).filter(i=>i!==undefined);v=3;}
   out.best=(out.best&&typeof out.best==='object')?out.best:{};out.daily=(out.daily&&typeof out.daily==='object')?out.daily:{};for(const k of ['perks','fun','heatBest','heatSel','tips','unlockSeen','noHit'])if(!out[k]||typeof out[k]!=='object')out[k]={};
-  out.settings={...d.settings,...(out.settings||{})};if(!out.tit33){out.tit33=1;if((out.title||0)>=11)out.title=12;if(out.titleUse!=null&&out.titleUse>=11)out.titleUse=12;}/* v0.33.0：舊的最高職稱「全公司唯一活人」保留在新的第 12 級 */
+  out.settings={...d.settings,...(out.settings||{})};if(!out.fun331){out.fun331=1;const RF={phone:800,social:800,seat:1000,sign:1200,card:1500};for(const k in RF){if(out.fun&&out.fun[k]){delete out.fun[k];out.coins=(out.coins||0)+RF[k];}}}/* v0.33.1：移除 5 項其他福利，已購買者全額退費 */
+  if(!out.tit33){out.tit33=1;if((out.title||0)>=11)out.title=12;if(out.titleUse!=null&&out.titleUse>=11)out.titleUse=12;}/* v0.33.0：舊的最高職稱「全公司唯一活人」保留在新的第 12 級 */
   if(!out.eco32){out.eco32=1;if(out.fun&&out.fun.plant){delete out.fun.plant;out.holder=Math.max(out.holder||0,1);out.coins=(out.coins||0)+1200;}const cl=(out.perks&&out.perks.coin)||0;if(cl>5){let r=0;for(let l=5;l<cl;l++)r+=Math.round(200*Math.pow(1.4,l));out.perks.coin=5;out.coins=(out.coins||0)+r;}}/* v0.32.0：辦公室植物改送皮革卡套並退款；薪資談判上限 5 級，退還超出等級 */
   if(!out.settings.shk2){if(out.settings.shake==='on')out.settings.shake='weak';out.settings.shk2=1;}/* v0.30.10：畫面震動預設改為「弱」（舊存檔一次性調整，之後依玩家設定） */if(!s||!s.settings||s.settings.shake===undefined){if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){out.settings.shake='weak';out.settings.flash=false;}}
   for(const u of UNLOCKS){if(out.cleared&&out.cleared.includes(u.need))out.unlockSeen[u.id]=true;}out.title=clamp(Math.floor(+out.title||0),0,TITLES.length-1);out.titleUse=(out.titleUse===undefined||out.titleUse===null)?out.title:clamp(Math.floor(+out.titleUse||0),0,out.title);if(!out.device||typeof out.device!=='string'||out.device.length<8){out.device='d'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);}out.v=3;out.bestEndless=Math.max(0,Math.floor(+out.bestEndless||0));for(const k of ['musicVol','sfxVol','gunVol'])out.settings[k]=clamp(Math.floor(+out.settings[k]||2),1,3);
@@ -2613,7 +2614,7 @@ function toppleRack(d){const p=G.player;d.kind='fallenrack';const down=p.y<d.y+d
 function startBoss(){
   const g=G;g.phase='boss';const a=Math.random()*TAU;
   if(g.def.boss==='board'){for(const [i,k] of ['dir_fin','dir_ops','dir_hr'].entries()){const b=makeBoss(k,a+i*TAU/3);b.pcd=1.5+i;}g.intro={keys:['dir_fin','dir_ops','dir_hr'],name:'董事會',line:'「三位董事一致決議：你今天不能下班。」',color:'#4a3a10',t:2.6,max:2.6};}
-  else{const b=makeBoss(g.def.boss,a);const B=BOSSES[g.def.boss];g.intro={keys:[g.def.boss],name:B.name,line:B.line+(fun('social')&&!g.daily?'（他其實人不錯）':''),color:B.color,t:2.2,max:2.2};}
+  else{const b=makeBoss(g.def.boss,a);const B=BOSSES[g.def.boss];g.intro={keys:[g.def.boss],name:B.name,line:B.line+(false&&!g.daily?'（他其實人不錯）':''),color:B.color,t:2.2,max:2.2};}
   g.shake=12;sfx('bossin');setMusic('boss');if(g.heat.includes('rage'))for(const bb of g.bosses)bb.hp=Math.min(bb.hp,bb.maxHp*.49);
 }
 function endlessBoss(){
@@ -2634,7 +2635,7 @@ function fire(){
   if(g.swing){if(!meleeAny(p,meleeReach(p,s.id)*(g.swing.shape==='chair'?1.5:1.05))){p.flashT=0;p.recoil=0;return;}meleeSwing(p,s,g,dmg,sg,rateMul);return;}
   if(g.melee){const m=g.melee,cx=p.x+Math.cos(p.aim)*m.reach,cy=p.y+Math.sin(p.aim)*m.reach,rad=m.radius*(sg>=1?1.3:1);
     for(const e of G.enemies){if(e.dead)continue;const d=Math.hypot(e.x-cx,e.y-cy);if(d<rad+e.r){if(sg>=3)e.stampMark=true;hurt(e,dmg);knock(e,cx,cy,m.kb);}}
-    G.decals.push({x:cx,y:cy,life:1.5,text:(fun('sign')&&!G.daily&&save.char.name)?save.char.name:'核准'});burst(cx,cy,'#c1121f',14,220,4);G.shake=Math.max(G.shake,6);gunSfx('stamp');
+    G.decals.push({x:cx,y:cy,life:1.5,text:(false&&!G.daily&&save.char.name)?save.char.name:'核准'});burst(cx,cy,'#c1121f',14,220,4);G.shake=Math.max(G.shake,6);gunSfx('stamp');
     if(sg>=2)G.delayed.push({t:.3,fn:()=>{for(const e of G.enemies){if(e.dead)continue;if(Math.hypot(e.x-cx,e.y-cy)<rad+e.r){hurt(e,dmg*.5,true);knock(e,cx,cy,m.kb*.5);}}G.decals.push({x:cx+10,y:cy+8,life:1.2,text:'核准'});sfx('hit');}});
     p.cd=g.rate/rateMul;return;}
   if(g.special==='lob'){const tgt=bestArc(p,420,.9),a=tgt.a;const near=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<460);if(!near.length){p.flashT=0;p.recoil=0;return;}
@@ -3114,7 +3115,7 @@ function update(dt){
 }
 function collect(it){
   const g=G,p=g.player;
-  if(it.type==='coin'){g.coins+=it.value*p.st.coin*(g.ob&&g.ob.angel?1.1:1)*(g.cp&&g.cp.sales?1.25:1)*(g.def.endless?Math.max(ENDLESS_BAL.coinMin,1-ENDLESS_BAL.coinDecay*hellM()):1);sfx((fun('register')&&!g.daily)?'register':'coin');}
+  if(it.type==='coin'){g.coins+=it.value*p.st.coin*(g.ob&&g.ob.angel?1.1:1)*(g.cp&&g.cp.sales?1.25:1)*(g.def.endless?Math.max(ENDLESS_BAL.coinMin,1-ENDLESS_BAL.coinDecay*hellM()):1);sfx((fun('register')&&!save.settings.regOff&&!g.daily)?'register':'coin');}
   else if(it.type==='buff'){if(it.sub==='shield'){p.shield=Math.min(p.shield+1,5);}else p.tbuff={k:it.sub,t:10};toast(BUFF_NAME[it.sub]+(it.sub==='shield'?'':'（10 秒）'),1.6);sfx('power');}
   else if(it.type==='heal'){const hv=Math.round((30+(p.st.healBonus||0))*(g.cp&&g.cp.teaRoom?1.5:1));p.hp=Math.min(p.maxHp,p.hp+healMul()*hv);floatText(p.x,p.y-30,'+'+hv+' 便當','#8fd14f',14);sfx('power');}
   else if(it.type==='xp'){gainXp((g.xpMul||1)*it.value/(1+g.diff*.12)*(g.def.endless?(g.hell?.3:.6):1));}
@@ -3390,7 +3391,7 @@ function drawPlayer(p){
   if(p.shield>0){ctx.strokeStyle='rgba(123,223,242,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y-4,p.r+12,0,TAU);ctx.stroke();}
   if(p.stealth){wtext(p.x,p.y-40,'潛行中','900 11px "Noto Sans TC",sans-serif','#4cc9f0');}
   if(!p.moving&&p.idle>3&&fun('busy')&&!G.daily)wtext(p.x,p.y-42,'處理中…','900 11px "Noto Sans TC",sans-serif','#eef0e8');
-  if(!p.moving&&p.idle>2&&fun('phone')&&!G.daily){ctx.fillStyle='#1a1d27';ctx.fillRect(p.x+p.face*8-3,p.y-6,6,9);ctx.fillStyle=Math.floor(G.time*3)%2?'#8ecae6':'#4cc9f0';ctx.fillRect(p.x+p.face*8-2,p.y-5,4,6);}
+  if(!p.moving&&p.idle>2&&false&&!G.daily){ctx.fillStyle='#1a1d27';ctx.fillRect(p.x+p.face*8-3,p.y-6,6,9);ctx.fillStyle=Math.floor(G.time*3)%2?'#8ecae6':'#4cc9f0';ctx.fillRect(p.x+p.face*8-2,p.y-5,4,6);}
   if(p.jam>0){ctx.fillStyle='#0a2a8a';ctx.fillRect(p.x-16,p.y-52,32,20);wtext(p.x,p.y-39,':( 當機','900 9px "Noto Sans TC",sans-serif','#ffffff');}
 }
 function drawPet(pt){
@@ -3564,7 +3565,7 @@ function drawHUD(){if(G&&G.dev){ctx.save();ctx.fillStyle='#b18cff';ctx.font='900
   if(p.tbuff){ctx.textAlign='left';ctx.font='700 12px "Noto Sans TC",sans-serif';ctx.fillStyle='#ffd23f';ctx.fillText(BUFF_NAME[p.tbuff.k]+' '+Math.ceil(p.tbuff.t)+'s',L,T+52+(fatigue()>0?16:0));ctx.textAlign=small?'left':'center';}
   {const fg=fatigue();if(fg>0){ctx.textAlign='left';ctx.font='700 12px "Noto Sans TC",sans-serif';ctx.fillStyle='#ff8fab';ctx.fillText('加班疲勞 '+Math.round(fg*100)+'%　回血 -'+Math.round(fg*100)+'%',L,T+52);}if(g.collapse){ctx.textAlign='center';ctx.font='900 16px "Noto Sans TC",sans-serif';ctx.fillStyle='#ff2e63';ctx.fillText('公司倒閉 '+Math.max(0,Math.ceil(g.collapse.t))+' 秒',W/2,insets.t+(small?104:78));}}
   if(g.heatPts){ctx.textAlign='left';ctx.font='700 12px "DotGothic16",monospace';ctx.fillStyle='#ff6a3d';ctx.fillText('強度 '+g.heatPts,L+hw+8,T+37);}
-  if(fun('card')&&!g.daily){const n=Math.floor((save.stampCard+p.kills)/100)%10;ctx.textAlign='right';ctx.font='700 11px "DotGothic16",monospace';ctx.fillStyle='rgba(238,240,232,.7)';ctx.fillText('集點 '+n+'/10',W-insets.r-16,H-insets.b-70);}
+  if(false&&!g.daily){const n=Math.floor((save.stampCard+p.kills)/100)%10;ctx.textAlign='right';ctx.font='700 11px "DotGothic16",monospace';ctx.fillStyle='rgba(238,240,232,.7)';ctx.fillText('集點 '+n+'/10',W-insets.r-16,H-insets.b-70);}
   if(g.mods.length&&!g.daily){ctx.textAlign=small?'left':'center';ctx.font='700 12px "Noto Sans TC",sans-serif';ctx.fillStyle='#ffd23f';ctx.fillText('事件：'+g.mods.map(m=>EVENTS[m].name).join('、'),tx,cy+(g.bosses.length>1?18+g.bosses.length*17+14:g.bosses.length?52:42));}
   {const db=$('#dodgeBtn');const cdOn=p.dashCd>0;if(db.classList.contains('cd')!==cdOn)db.classList.toggle('cd',cdOn);if(!cdOn)p._dcm=0;else if(p.dashCd>(p._dcm||0))p._dcm=p.dashCd;const pc=cdOn?Math.round((1-p.dashCd/(p._dcm||1))*100):100;if(db._pc!==pc){db._pc=pc;db.style.setProperty('--p',pc+'%');}
    const sb=$('#swapBtn .swi'),ns=p.slots[p.slots.length>1?1-p.active:p.active],nid=ns?ns.id:'';if(sb&&sb._id!==nid){sb._id=nid;sb.src=nid?gunIcon(nid):'';}const te=$('#touch');if(te&&te.classList.contains('intro')!==!!g.intro)te.classList.toggle('intro',!!g.intro);}
@@ -3609,7 +3610,7 @@ function render(){
   const K=DPR*ZOOM,ox=cam.x-sx,oy=cam.y-sy,bx=Math.floor(ox),by=Math.floor(oy),lw=Math.ceil(vw)+2,lh=Math.ceil(vh)+2;if(low.width!==lw||low.height!==lh){low.width=lw;low.height=lh;}
   ctx=lowCtx;ctx.setTransform(1,0,0,1,-bx,-by);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#12151d';ctx.fillRect(bx-2,by-2,lw+4,lh+4);
   drawFloor(cam,vw,vh,T);if(isTouch&&G){ctx.fillStyle='rgba(8,10,16,.55)';const L=cam.x-50,Tp=cam.y-50,R=cam.x+vw+50,B=cam.y+vh+50;if(L<0)ctx.fillRect(L,Tp,-L,B-Tp);if(R>WORLD.w)ctx.fillRect(WORLD.w,Tp,R-WORLD.w,B-Tp);if(Tp<0)ctx.fillRect(Math.max(0,L),Tp,Math.min(WORLD.w,R)-Math.max(0,L),-Tp);if(B>WORLD.h)ctx.fillRect(Math.max(0,L),WORLD.h,Math.min(WORLD.w,R)-Math.max(0,L),B-WORLD.h);}drawDecor(G?G.decor:demo.decor,T);if(G)drawFz(G);drawDesks(desks,T);
-  if(G&&G.lv===0&&!G.daily&&fun('seat')){const nx=710,ny=196,nm=[...(save.char.name||'社畜')].slice(0,12).join(''),hw=Math.max(32,Math.ceil([...nm].reduce((s,c)=>s+(c.charCodeAt(0)>255?10:6.5),0)/2)+8);ctx.fillStyle='#5c4033';ctx.fillRect(nx-hw-2,ny-2,hw*2+4,16);ctx.fillStyle='#ffd23f';ctx.fillRect(nx-hw,ny,hw*2,12);ctx.fillStyle='#5c4033';ctx.fillRect(nx-hw+2,ny+14,4,6);ctx.fillRect(nx+hw-6,ny+14,4,6);wtext(nx,ny+10,nm,'900 10px "Noto Sans TC",sans-serif','#1a1d27');}
+  if(G&&G.lv===0&&!G.daily&&false){const nx=710,ny=196,nm=[...(save.char.name||'社畜')].slice(0,12).join(''),hw=Math.max(32,Math.ceil([...nm].reduce((s,c)=>s+(c.charCodeAt(0)>255?10:6.5),0)/2)+8);ctx.fillStyle='#5c4033';ctx.fillRect(nx-hw-2,ny-2,hw*2+4,16);ctx.fillStyle='#ffd23f';ctx.fillRect(nx-hw,ny,hw*2,12);ctx.fillStyle='#5c4033';ctx.fillRect(nx-hw+2,ny+14,4,6);ctx.fillRect(nx+hw-6,ny+14,4,6);wtext(nx,ny+10,nm,'900 10px "Noto Sans TC",sans-serif','#1a1d27');}
   if(G){drawGame();if(G.def.dark)drawDark(cam,vw,vh);}else{const zs=demo.zs.slice().sort((a,b)=>a.y-b.y);const _G=G,useArt=artOK();if(useArt)G={time:demo.t,def:{},player:null,enemies:[]};/* v0.32.0：選單背景改用新版殭屍美術 */
   for(const z of zs){let ok=false;if(useArt){const I=artInfo(artEnemyKey(z));if(I){z.scale=ETYPES[z.type].scale;z.speed=ETYPES[z.type].speed;if(z._born==null)z._born=-10;try{artDrawEnemy(z,I,1);ok=true;}catch(e){}}}
    if(!ok){const fr=Math.floor(z.anim*6)%4;drawSpriteAt(zombieSprite(z.type,fr),z.x,z.y+ZLURCH[fr]*.8,ETYPES[z.type].scale,z.face,false,1);}}
@@ -3743,7 +3744,7 @@ function drawTitle(){
   x.fillStyle=sl;x.fillRect(cx+9*ps,cy+9*ps,gx-cx-9*ps+2,ps);x.fillStyle=hd;x.fillRect(gx-2,gy-2,5,5);if(gg.fore)x.fillRect(gx-(gg.grip||3)*gsc+gg.fore*gsc-2,gy,5,5);}
   const tmw=W2-112;x.font=(LANG==='en'?'900 38px':'900 44px')+' "Noto Sans TC",sans-serif';x.textAlign='left';x.fillStyle='#1a1d27';x.fillText('殭屍辦公室',18,120,tmw);x.fillStyle='#ffd23f';x.fillText('殭屍辦公室',14,116,tmw);
   x.font='700 13px "DotGothic16","Noto Sans TC",monospace';x.fillStyle='#eef0e8';x.fillText('ZOMBIE OFFICE  活著下班',16,140);
-  if(fun('plant'))drawPlant(x,W2-16,H2-4,save.plant||0);
+  if(false)drawPlant(x,W2-16,H2-4,save.plant||0);
 }
 let EZONE=null,ESEL=null,EBANK=null;
 const BANKS=[[12,0,13,1,19,2,18,3,14,15,4],[5,6,16,7,17,8,20,9,10]];
@@ -3865,7 +3866,7 @@ function renderHR(tab){
   const pips=(l,m)=>'<span class="pips">'+Array.from({length:m},(_,i)=>'<i class="'+(i<l?'on':'')+'"></i>').join('')+'</span>';
   let body='';
   if(HRTAB==='perks')body='<p class="lead">永久加成，每一局都有效。</p>'+Object.entries(PERKS).map(([id,pk])=>{const l=perk(id),full=l>=pk.max,pr=perkPrice(id);return '<div class="hrrow"><div><h4>'+esc(pk.name)+'</h4><p>'+esc(pk.per)+'</p><div class="hrlv">'+pips(l,pk.max)+'<span class="hrchg">'+(full?esc(pk.val(l)):esc(pk.val(l))+' → '+esc(pk.val(l+1)))+'</span></div></div>'+(full?'<span class="hrdone">已滿級</span>':'<button class="hbuy" data-act="buyPerk" data-arg="'+id+'"'+(save.coins<pr?' disabled':'')+'><i class="coin"></i>'+pr.toLocaleString()+'</button>')+'</div>';}).join('');
-  else if(HRTAB==='fun')body='<p class="lead">這一區的效果都很無腦，請自行斟酌。</p>'+holderRow()+Object.entries(FUN).map(([id,f])=>'<div class="hrrow fun"><div><h4>'+esc(f.name)+'</h4><p>'+esc(f.desc)+'</p></div>'+(fun(id)?'<span class="hrdone">✓ 核准</span>':'<button class="hbuy" data-act="buyFun" data-arg="'+id+'"'+(save.coins<f.price?' disabled':'')+'><i class="coin"></i>'+f.price.toLocaleString()+'</button>')+'</div>').join('');
+  else if(HRTAB==='fun')body='<p class="lead">這一區的效果都很無腦，請自行斟酌。</p>'+holderRow()+Object.entries(FUN).map(([id,f])=>'<div class="hrrow fun"><div><h4>'+esc(f.name)+'</h4><p>'+esc(f.desc)+'</p></div>'+(fun(id)?(id==='register'?'<button class="hbuy ghost" data-act="toggleReg">'+(save.settings.regOff?'🔈 預設音效':'🔔 收銀機音效')+'</button>':'<span class="hrdone">✓ 核准</span>'):'<button class="hbuy" data-act="buyFun" data-arg="'+id+'"'+(save.coins<f.price?' disabled':'')+'><i class="coin"></i>'+f.price.toLocaleString()+'</button>')+'</div>').join('');
   else{const t=save.title,u=clamp(save.titleUse??t,0,t);body='<p class="lead">職稱只是頭銜，沒有能力效果，買過的可以隨時換回來用。</p>'+TITLES.map((x,i)=>'<div class="hrrow tit"><div><h4>'+(i<=t?'✓ ':'')+esc(x.n)+'</h4><p>'+(i===0?'預設':i<=t?'第 '+i+' 級　已擁有':i===t+1?'第 '+i+' 級　'+(titleOpen(i)?'下一個可以升的職稱':'通關 '+LEVELS[x.f].floor+' 後開放'):'第 '+i+' 級　'+(titleOpen(i)?'先升到「'+esc(TITLES[i-1].n)+'」才能購買':'通關 '+LEVELS[x.f].floor+' 後開放'))+'</p></div>'+(i<=t?(i===u&&!(save.titleAch&&save.achv[save.titleAch])?'<span class="hrdone y">使用中</span>':'<button class="hbuy ghost" data-act="useTitle" data-arg="'+i+'">使用</button>'):!titleOpen(i)?'<span class="hrlock"><span class="pxlock"></span>'+LEVELS[x.f].floor+' 開放</span>':i===t+1?'<button class="hbuy" data-act="buyTitle"'+(save.coins<x.p?' disabled':'')+'><i class="coin"></i>'+x.p.toLocaleString()+'</button>':'<span class="hrlock"><span class="pxlock"></span><i class="coin"></i>'+x.p.toLocaleString()+'</span>')+'</div>').join('');}
   if(HRTAB==='title'){achCheck();body+=ACH_GROUPS.map(([g,ks])=>'<div class="setsec">成就職稱・'+g+'</div>'+ks.map(k=>{const n=ACH_TITLES[k],got=save.achv&&save.achv[k],use=save.titleAch===k&&got,pr=got?'':achProg(k);return '<div class="hrrow ach"><div><h4>'+(got?'✓ ':'')+esc(n)+'</h4><p>'+nwp(ACH_COND[k]||'')+(pr?'<span class="achp">目前 '+esc(pr)+'</span>':'')+'</p></div>'+(got?(use?'<span class="hrdone y">使用中</span>':'<button class="hbuy ghost" data-act="useAch" data-arg="'+k+'">使用</button>'):'<span class="hrlock"><span class="pxlock"></span>未解鎖</span>')+'</div>';}).join('')).join('');}
   const tabs='<div class="lbtab"><button class="opt'+(HRTAB==='perks'?' on':'')+'" data-act="hrTab" data-arg="perks">年資加成</button><button class="opt'+(HRTAB==='fun'?' on':'')+'" data-act="hrTab" data-arg="fun">其他福利</button><button class="opt'+(HRTAB==='title'?' on':'')+'" data-act="hrTab" data-arg="title">職稱</button></div>';
@@ -4185,7 +4186,7 @@ function endRun(win,quit){
   if(win&&!G.daily&&!G.climbRun){const day=new Date().toDateString();if(!save.cleared.includes(lv)){bonus*=3;G.bonusNote='首次通關獎金 ×3（+'+bonus.toLocaleString()+'）';save.farm={lv:-1,n:0,day};}else{const fm=save.farm||{},n=(fm.lv===lv&&fm.day===day)?(fm.n||0)+1:0;save.farm={lv,n,day};const f=Math.max(.4,1-.15*n);bonus=Math.round(bonus*.5*f);G.bonusNote='重複通關獎金 ×0.5'+(n?'，同層連續第 '+(n+1)+' 次再 ×'+f.toFixed(2):'')+'（+'+bonus.toLocaleString()+'）';}}
   const ot=otPay(win,quit,L,lv),earned=Math.floor(G.coins)+bonus+ot;
   const tsec=Math.floor(G.time);let newBest=false;
-  save.coins+=earned;addEarned(earned);if(fun('card'))save.stampCard+=G.player.kills;if(win){if(!save.cleared.includes(lv))save.cleared.push(lv);if(G.heatPts>(save.heatBest[lv]||0))save.heatBest[lv]=G.heatPts;if(fun('plant'))save.plant=Math.min(8,(save.plant||0)+1);{const had4=floorOpen(19);if(G.hits===0&&!G.daily)save.noHit[lv]=true;if(!had4&&floorOpen(19))G.new4F=true;}{const it=grantReward(lv);if(it)G.gotReward=it;}if(lv===19&&!save.achv.fourth){save.achv.fourth=true;G.gotTitle4=true;}if(!save.best[lv]||tsec<save.best[lv]){save.best[lv]=tsec;newBest=true;}}
+  save.coins+=earned;addEarned(earned);if(false)save.stampCard+=G.player.kills;if(win){if(!save.cleared.includes(lv))save.cleared.push(lv);if(G.heatPts>(save.heatBest[lv]||0))save.heatBest[lv]=G.heatPts;if(false)save.plant=Math.min(8,(save.plant||0)+1);{const had4=floorOpen(19);if(G.hits===0&&!G.daily)save.noHit[lv]=true;if(!had4&&floorOpen(19))G.new4F=true;}{const it=grantReward(lv);if(it)G.gotReward=it;}if(lv===19&&!save.achv.fourth){save.achv.fourth=true;G.gotTitle4=true;}if(!save.best[lv]||tsec<save.best[lv]){save.best[lv]=tsec;newBest=true;}}
   if((lv===12||lv===0)&&(win||G.player.kills>=10))save.tut=true;if(L.survival&&win&&!G.daily)save.survBestK=Math.max(save.survBestK||0,G.player.kills);
   persist();mode='result';controlsUI(false);$('#actBtn').classList.add('hidden');
   const nx=win?nextAfter(lv):null,hasNext=nx!==null&&nx!==undefined,final=win&&L.rooftop;
@@ -4218,6 +4219,7 @@ const ACTIONS={
   lbRename:()=>renderBadge(false),
   hr:()=>renderHR(),hrTab:a=>renderHR(a),
   buyPerk:a=>{const pk=PERKS[a];if(!pk||perk(a)>=pk.max)return;const pr=perkPrice(a);if(save.coins<pr)return;save.coins-=pr;save.perks[a]=perk(a)+1;persist();sfx('upgrade');renderHR('perks');},
+  toggleReg:()=>{save.settings.regOff=!save.settings.regOff;persist();sfx(save.settings.regOff?'coin':'register');renderHR('fun');},
   holderBuy:()=>{const h=save.holder||0,nx=HOLDERS[h+1];if(!nx||save.coins<nx.p)return;save.coins-=nx.p;save.holder=h+1;save.holderUse=h+1;persist();sfx('upgrade');renderHR('fun');},
   holderUse:a=>{const t=+a;if(!(t>=0&&t<=(save.holder||0)))return;save.holderUse=t;persist();sfx('ui');renderHR('fun');},
   buyFun:a=>{const f=FUN[a];if(!f||fun(a)||save.coins<f.price)return;save.coins-=f.price;save.fun[a]=true;persist();sfx('upgrade');renderHR('fun');},
