@@ -1,6 +1,6 @@
 # 殭屍辦公室：活著下班　Zombie Office
 
-> 目前版本：v0.32.9
+> 目前版本：v0.32.10
 
 公司裡的同事全變成殭屍了。你手上只有釘書機手槍和一條領帶——從 B1 停車場一路往上殺到頂樓，打倒變成殭屍的主管和董事會，活著下班。
 
@@ -40,4 +40,4 @@
 ## 回饋
 遊戲內「設定 → 回報問題」可以直接回報問題或建議。
 
-隱私權政策：https://heng-builds.github.io/zombie-office/privacy.html
+隱私權政策：https://11to2studio.github.io/zombie-office/privacy.html
